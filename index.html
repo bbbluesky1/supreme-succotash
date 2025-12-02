@@ -1,81 +1,102 @@
 <!DOCTYPE html><html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>一次関数を三角形で可視化</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>θで傾きを変える一次関数可視化</title>
 <style>
-  body { background:#0f1724; color:#e6eef8; font-family:sans-serif; display:flex; flex-direction:column; align-items:center; padding:24px; }
-  h1 { font-size:20px; }
-  .controls { display:flex; gap:12px; margin-bottom:12px; }
-  label { display:block; font-size:12px; margin-bottom:4px; }
-  input[type=range]{ width:200px; }
-  svg { width:100%; max-width:600px; height:600px; background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent); border-radius:8px; }
+  body { background:#0f1724; color:#e6eef8; font-family:sans-serif; display:flex; flex-direction:column; align-items:center; padding:20px; }
+  h1 { font-size:20px; margin-bottom:10px; text-align:center; }
+  svg { border:1px solid #333; background:#0b1220; width:90%; height:400px; }
+  .controls { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-top:10px; }
+  label { font-size:14px; }
+  input[type=range] { width:200px; }
 </style>
 </head>
-<body>
-<h1>原点通る一次関数 y = m x を三角形で可視化</h1><div class="controls">
-  <div>
-    <label>傾き m: <span id="mVal">1.0</span></label>
-    <input type="range" id="mRange" min="-10" max="10" step="0.01" value="1">
-  </div>
-  <div>
-    <label>底辺 x: <span id="xVal">1.0</span></label>
-    <input type="range" id="xRange" min="0.1" max="10" step="0.1" value="1">
-  </div>
-</div><svg id="svg" viewBox="-1 -1 12 12"></svg>
+<body><h1>θを変えて一次関数の傾きを三角形で可視化</h1><div class="controls">
+  <label>角度 θ (deg): <span id="thetaVal">45</span>
+    <input type="range" id="thetaRange" min="-80" max="80" step="1" value="45">
+  </label>
+  <label>底辺 x: <span id="xVal">2.0</span>
+    <input type="range" id="xRange" min="0.5" max="10" step="0.1" value="2">
+  </label>
+</div><svg id="svg" viewBox="0 0 10 10" preserveAspectRatio="xMidYMid meet"></svg>
 
 <script>
 const svg = document.getElementById('svg');
-const mRange = document.getElementById('mRange');
+const thetaRange = document.getElementById('thetaRange');
+const thetaVal = document.getElementById('thetaVal');
 const xRange = document.getElementById('xRange');
-const mVal = document.getElementById('mVal');
 const xVal = document.getElementById('xVal');
 
-let state = { m: 1, x: 1 };
-
-function mapX(x){ return x; } // viewBox に合わせてそのまま
-function mapY(y){ return y; }
-
-function clearSVG(){ while(svg.lastChild) svg.removeChild(svg.lastChild); }
+let state = {theta:45, x:2};
 
 function draw(){
-  clearSVG();
-  const m = state.m;
+  while(svg.lastChild) svg.removeChild(svg.lastChild);
+
+  const theta = state.theta;
   const x = state.x;
+  const m = Math.tan(theta*Math.PI/180);
+  const y = m*x;
 
   // 座標軸
-  const axisX = document.createElementNS('http://www.w3.org/2000/svg','line');
+  const axisX = document.createElementNS("http://www.w3.org/2000/svg","line");
   axisX.setAttribute('x1',0); axisX.setAttribute('y1',0);
-  axisX.setAttribute('x2',11); axisX.setAttribute('y2',0);
-  axisX.setAttribute('stroke','rgba(255,255,255,0.3)'); axisX.setAttribute('stroke-width',0.05);
-  svg.appendChild(axisX);
+  axisX.setAttribute('x2',10); axisX.setAttribute('y2',0);
+  axisX.setAttribute('stroke','#888'); svg.appendChild(axisX);
 
-  const axisY = document.createElementNS('http://www.w3.org/2000/svg','line');
+  const axisY = document.createElementNS("http://www.w3.org/2000/svg","line");
   axisY.setAttribute('x1',0); axisY.setAttribute('y1',0);
-  axisY.setAttribute('x2',0); axisY.setAttribute('y2',11);
-  axisY.setAttribute('stroke','rgba(255,255,255,0.3)'); axisY.setAttribute('stroke-width',0.05);
-  svg.appendChild(axisY);
+  axisY.setAttribute('x2',0); axisY.setAttribute('y2',10);
+  axisY.setAttribute('stroke','#888'); svg.appendChild(axisY);
 
-  // 三角形: 底辺(0,0)-(x,0), 高さ(0,0)-(x,m*x)
-  const tri = document.createElementNS('http://www.w3.org/2000/svg','polygon');
-  tri.setAttribute('points',`0,0 ${x},0 ${x},${m*x}`);
-  tri.setAttribute('fill','rgba(245,158,11,0.3)');
-  tri.setAttribute('stroke','#f59e0b');
-  tri.setAttribute('stroke-width',0.05);
-  svg.appendChild(tri);
-
-  // 斜辺（直線 y=mx）
-  const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+  // 線 y = m*x
+  const line = document.createElementNS("http://www.w3.org/2000/svg","line");
   line.setAttribute('x1',0); line.setAttribute('y1',0);
-  line.setAttribute('x2',x); line.setAttribute('y2',m*x);
+  line.setAttribute('x2',x*3); line.setAttribute('y2',m*x*3);
   line.setAttribute('stroke','#6ee7b7'); line.setAttribute('stroke-width',0.05);
   svg.appendChild(line);
+
+  // 三角形
+  const tri = document.createElementNS("http://www.w3.org/2000/svg","polygon");
+  tri.setAttribute('points',`
+    0,0 
+    ${x},0 
+    ${x},${y}
+  `);
+  tri.setAttribute('fill','rgba(245,158,11,0.4)');
+  tri.setAttribute('stroke','#f59e0b');
+  tri.setAttribute('stroke-width','0.05');
+  svg.appendChild(tri);
+
+  // 底辺・高さラベル
+  const baseLabel = document.createElementNS("http://www.w3.org/2000/svg","text");
+  baseLabel.setAttribute('x', x/2); baseLabel.setAttribute('y', -0.3);
+  baseLabel.setAttribute('fill','#f59e0b'); baseLabel.setAttribute('font-size','0.3'); baseLabel.textContent = `base = ${x.toFixed(2)}`;
+  svg.appendChild(baseLabel);
+
+  const heightLabel = document.createElementNS("http://www.w3.org/2000/svg","text");
+  heightLabel.setAttribute('x', x+0.1); heightLabel.setAttribute('y', y/2);
+  heightLabel.setAttribute('fill','#f59e0b'); heightLabel.setAttribute('font-size','0.3'); heightLabel.textContent = `height = ${y.toFixed(2)}`;
+  svg.appendChild(heightLabel);
+
+  // θ表示
+  const thetaLabel = document.createElementNS("http://www.w3.org/2000/svg","text");
+  thetaLabel.setAttribute('x', 0.1); thetaLabel.setAttribute('y', 0.5);
+  thetaLabel.setAttribute('fill','#6ee7b7'); thetaLabel.setAttribute('font-size','0.4'); thetaLabel.textContent = `θ = ${theta}° (m = ${m.toFixed(2)})`;
+  svg.appendChild(thetaLabel);
 }
 
-// イベント
-mRange.addEventListener('input', e=>{ state.m = Number(e.target.value); mVal.textContent = state.m.toFixed(2); draw(); });
-xRange.addEventListener('input', e=>{ state.x = Number(e.target.value); xVal.textContent = state.x.toFixed(2); draw(); });
+thetaRange.addEventListener('input', e=>{
+  state.theta = parseFloat(e.target.value);
+  thetaVal.textContent = state.theta;
+  draw();
+});
+xRange.addEventListener('input', e=>{
+  state.x = parseFloat(e.target.value);
+  xVal.textContent = state.x.toFixed(2);
+  draw();
+});
 
-// 初期描画
 draw();
 </script></body>
 </html>
