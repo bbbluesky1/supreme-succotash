@@ -1,0 +1,81 @@
+<!DOCTYPE html><html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>一次関数を三角形で可視化</title>
+<style>
+  body { background:#0f1724; color:#e6eef8; font-family:sans-serif; display:flex; flex-direction:column; align-items:center; padding:24px; }
+  h1 { font-size:20px; }
+  .controls { display:flex; gap:12px; margin-bottom:12px; }
+  label { display:block; font-size:12px; margin-bottom:4px; }
+  input[type=range]{ width:200px; }
+  svg { width:100%; max-width:600px; height:600px; background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent); border-radius:8px; }
+</style>
+</head>
+<body>
+<h1>原点通る一次関数 y = m x を三角形で可視化</h1><div class="controls">
+  <div>
+    <label>傾き m: <span id="mVal">1.0</span></label>
+    <input type="range" id="mRange" min="-10" max="10" step="0.01" value="1">
+  </div>
+  <div>
+    <label>底辺 x: <span id="xVal">1.0</span></label>
+    <input type="range" id="xRange" min="0.1" max="10" step="0.1" value="1">
+  </div>
+</div><svg id="svg" viewBox="-1 -1 12 12"></svg>
+
+<script>
+const svg = document.getElementById('svg');
+const mRange = document.getElementById('mRange');
+const xRange = document.getElementById('xRange');
+const mVal = document.getElementById('mVal');
+const xVal = document.getElementById('xVal');
+
+let state = { m: 1, x: 1 };
+
+function mapX(x){ return x; } // viewBox に合わせてそのまま
+function mapY(y){ return y; }
+
+function clearSVG(){ while(svg.lastChild) svg.removeChild(svg.lastChild); }
+
+function draw(){
+  clearSVG();
+  const m = state.m;
+  const x = state.x;
+
+  // 座標軸
+  const axisX = document.createElementNS('http://www.w3.org/2000/svg','line');
+  axisX.setAttribute('x1',0); axisX.setAttribute('y1',0);
+  axisX.setAttribute('x2',11); axisX.setAttribute('y2',0);
+  axisX.setAttribute('stroke','rgba(255,255,255,0.3)'); axisX.setAttribute('stroke-width',0.05);
+  svg.appendChild(axisX);
+
+  const axisY = document.createElementNS('http://www.w3.org/2000/svg','line');
+  axisY.setAttribute('x1',0); axisY.setAttribute('y1',0);
+  axisY.setAttribute('x2',0); axisY.setAttribute('y2',11);
+  axisY.setAttribute('stroke','rgba(255,255,255,0.3)'); axisY.setAttribute('stroke-width',0.05);
+  svg.appendChild(axisY);
+
+  // 三角形: 底辺(0,0)-(x,0), 高さ(0,0)-(x,m*x)
+  const tri = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+  tri.setAttribute('points',`0,0 ${x},0 ${x},${m*x}`);
+  tri.setAttribute('fill','rgba(245,158,11,0.3)');
+  tri.setAttribute('stroke','#f59e0b');
+  tri.setAttribute('stroke-width',0.05);
+  svg.appendChild(tri);
+
+  // 斜辺（直線 y=mx）
+  const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+  line.setAttribute('x1',0); line.setAttribute('y1',0);
+  line.setAttribute('x2',x); line.setAttribute('y2',m*x);
+  line.setAttribute('stroke','#6ee7b7'); line.setAttribute('stroke-width',0.05);
+  svg.appendChild(line);
+}
+
+// イベント
+mRange.addEventListener('input', e=>{ state.m = Number(e.target.value); mVal.textContent = state.m.toFixed(2); draw(); });
+xRange.addEventListener('input', e=>{ state.x = Number(e.target.value); xVal.textContent = state.x.toFixed(2); draw(); });
+
+// 初期描画
+draw();
+</script></body>
+</html>
